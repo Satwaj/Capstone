@@ -5,9 +5,9 @@ metadata:
   labels:
     app.kubernetes.io/name: codespace-ingress
 spec:
-  ingressClassName: nginx 
+  ingressClassName: nginx
   rules:
-   - http:
+  - http:
       paths:
       - pathType: Prefix
         path: "/api/sandbox"
