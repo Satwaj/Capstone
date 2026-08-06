@@ -22,7 +22,6 @@ export const listFiles = tool(
         }
       );
 
-      console.log("2. Axios completed");
 
       console.log("=================================");
       console.log("response from list files tool");
