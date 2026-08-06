@@ -12,12 +12,12 @@ export const listFiles = tool(
 
     console.log("1. Before axios");
 
-    const baseUrl = process.env.SANDBOX_API_URL || "http://019fd12f-b7ff-7549-9d84-283b17cbe90e.agent.localhost";
+    const baseUrl = process.env.SANDBOX_API_URL || "http://sandbox-service";
 
     try {
       const response = await axios.get(
         `${baseUrl}/list-files`, {
-          headers: { Host: "019fd12f-b7ff-7549-9d84-283b17cbe90e.agent.localhost" },
+          headers: { Host: "019fd88c-168f-7165-89de-8091bb44ee8d:3000" },
           timeout: 15000,
         }
       );
@@ -51,9 +51,9 @@ export const readFiles = tool(
     console.log("using read files tool with files", files)
     console.log("=================================")
 
-    const baseUrl = process.env.SANDBOX_API_URL || "http://019fd12f-b7ff-7549-9d84-283b17cbe90e.agent.localhost";
+    const baseUrl = process.env.SANDBOX_API_URL || "http://sandbox-service";
     const response = await axios.get(`${baseUrl}/read-files?files=` + files.join(","), {
-      headers: { Host: "019fd12f-b7ff-7549-9d84-283b17cbe90e.agent.localhost" }
+      headers: { Host: "019fd88c-168f-7165-89de-8091bb44ee8d:3000" }
     })
 
     console.log("=================================")
@@ -78,11 +78,11 @@ export const updateFiles = tool(
     console.log("using update files tool with files", files)
     console.log("=================================")
 
-    const baseUrl = process.env.SANDBOX_API_URL || "http://019fd12f-b7ff-7549-9d84-283b17cbe90e.agent.localhost";
+    const baseUrl = process.env.SANDBOX_API_URL || "http://sandbox-service";
     const response = await axios.patch(`${baseUrl}/update-files`, {
       updates: files
     }, {
-      headers: { Host: "019fd12f-b7ff-7549-9d84-283b17cbe90e.agent.localhost" }
+      headers: { Host: "019fd88c-168f-7165-89de-8091bb44ee8d:3000" }
     })
     console.log("=================================")
     console.log("response from update files tool", response.data)
