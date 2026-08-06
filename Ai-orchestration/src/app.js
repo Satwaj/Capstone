@@ -15,6 +15,12 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 
+app.get("/api/status/healthz", (req, res) => {
+  res.json({ status: "ok" });
+});
+
+
+
 app.get("/api/ai/healthz", (req, res) => {
   res.json({ status: "ok" });
 });
