@@ -4,43 +4,27 @@ import {
 } from "langchain"
 import * as z from "zod";
 
+
 export const listFiles = tool(
-  async () => {
-    console.log("=================================");
-    console.log("using list files tool");
-    console.log("=================================");
+  async ({}) => {
+    console.log("=================================")
+    console.log("using list files tool")
+    console.log("=================================")
 
-    console.log("1. Before axios");
-
-    const baseUrl = process.env.SANDBOX_API_URL || "http://sandbox-service";
-
-    try {
-      const response = await axios.get(
-        `${baseUrl}/list-files`, {
-          headers: { Host: "019fd88c-168f-7165-89de-8091bb44ee8d:3000" },
-          timeout: 15000,
-        }
-      );
+    const response = await axios.get("http://sandbox-service-019fe071-cd02-7126-a5ae-0fd844877523:3000/list-files")
 
 
-      console.log("=================================");
-      console.log("response from list files tool");
-      console.log(response.data);
-      console.log("=================================");
+    console.log("=================================")
+    console.log("response from list files tool", response.data)
+    console.log("=================================")
 
-      return JSON.stringify(response.data.files);
-    } catch (err) {
-      console.error("Error calling list-files:", err.message);
-      return JSON.stringify({ error: err.message });
-    }
+    return JSON.stringify(response.data.files);
   }, {
     name: "list_files",
     description: "List all the files in the project directory. This is useful for understanding what files are available to work with.",
-    schema: z.object({}),
+    schema: z.object({})
   }
-);
-
-
+)
 
 export const readFiles = tool(
   async ({
@@ -51,10 +35,7 @@ export const readFiles = tool(
     console.log("using read files tool with files", files)
     console.log("=================================")
 
-    const baseUrl = process.env.SANDBOX_API_URL || "http://sandbox-service";
-    const response = await axios.get(`${baseUrl}/read-files?files=` + files.join(","), {
-      headers: { Host: "019fd88c-168f-7165-89de-8091bb44ee8d:3000" }
-    })
+    const response = await axios.get("http://sandbox-service-019fe071-cd02-7126-a5ae-0fd844877523:3000/read-files?files=" + files.join(","))
 
     console.log("=================================")
     console.log("response from read files tool", response.data)
@@ -78,11 +59,8 @@ export const updateFiles = tool(
     console.log("using update files tool with files", files)
     console.log("=================================")
 
-    const baseUrl = process.env.SANDBOX_API_URL || "http://sandbox-service";
-    const response = await axios.patch(`${baseUrl}/update-files`, {
+    const response = await axios.patch("http://sandbox-service-019fe071-cd02-7126-a5ae-0fd844877523:3000/update-files", {
       updates: files
-    }, {
-      headers: { Host: "019fd88c-168f-7165-89de-8091bb44ee8d:3000" }
     })
     console.log("=================================")
     console.log("response from update files tool", response.data)

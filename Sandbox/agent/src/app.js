@@ -10,7 +10,9 @@ const app = express();
 app.use(morgan('dev'));
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({
+    extended: true
+}));
 
 app.use((req, res, next) => {
     console.log(
@@ -42,7 +44,9 @@ app.get('/', (req, res) => {
 app.get("/list-files", async (req, res) => {
 
     const listFiles = async (dir, baseDir) => {
-        const entries = await fs.promises.readdir(dir, { withFileTypes: true });
+        const entries = await fs.promises.readdir(dir, {
+            withFileTypes: true
+        });
         const files = [];
 
         for (const entry of entries) {
@@ -50,7 +54,7 @@ app.get("/list-files", async (req, res) => {
             const relativePath = path.relative(baseDir, fullPath);
 
             // Exclude certain directories
-            if (entry.isDirectory() && [ 'node_modules', '.git', 'dist' ].includes(entry.name)) {
+            if (entry.isDirectory() && ['node_modules', '.git', 'dist'].includes(entry.name)) {
                 continue;
             }
 
@@ -103,11 +107,11 @@ app.get("/read-files", async (req, res) => {
         try {
             const content = await fs.promises.readFile(filePath, 'utf-8');
             return {
-                [ filePath.replace(WORKING_DIR, '') ]: content,
+                [filePath.replace(WORKING_DIR, '')]: content,
             }
         } catch (err) {
             return {
-                [ filePath.replace(WORKING_DIR, '') ]: `Error reading file: ${err.message}`,
+                [filePath.replace(WORKING_DIR, '')]: `Error reading file: ${err.message}`,
             }
         }
     }));
@@ -136,20 +140,25 @@ app.patch("/update-files", async (req, res) => {
     }
 
     const results = await Promise.all(updates.map(async (update) => {
-        const { file, content } = update;
+        const {
+            file,
+            content
+        } = update;
         const filePath = path.join(WORKING_DIR, file);
         try {
 
             console.log(path.dirname(filePath), filePath);
 
-            await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+            await fs.promises.mkdir(path.dirname(filePath), {
+                recursive: true
+            });
             await fs.promises.writeFile(filePath, content, 'utf-8');
             return {
-                [ filePath ]: 'File updated successfully',
+                [filePath]: 'File updated successfully',
             }
         } catch (err) {
             return {
-                [ filePath ]: `Error updating file: ${err.message}`,
+                [filePath]: `Error updating file: ${err.message}`,
             }
         }
     }));
@@ -176,18 +185,23 @@ app.post("/create-files", async (req, res) => {
     }
 
     const results = await Promise.all(files.map(async (fileObj) => {
-        const { file, content } = fileObj;
+        const {
+            file,
+            content
+        } = fileObj;
         const filePath = path.join(WORKING_DIR, file);
         try {
 
-            await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+            await fs.promises.mkdir(path.dirname(filePath), {
+                recursive: true
+            });
             await fs.promises.writeFile(filePath, content, 'utf-8');
             return {
-                [ filePath ]: 'File created successfully',
+                [filePath]: 'File created successfully',
             }
         } catch (err) {
             return {
-                [ filePath ]: `Error creating file: ${err.message}`,
+                [filePath]: `Error creating file: ${err.message}`,
             }
         }
     }));
