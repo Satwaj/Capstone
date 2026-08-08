@@ -10,12 +10,12 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 5173,
     allowedHosts: true,
-  },
-
-  watch: {
-    usePolling: true,
-    interval: 1000,
-    ignored: ["**/node_modules/**"],
-  },
+    hmr: { clientPort: 80, protocol: "ws" },
+     watch: {
+       usePolling: true,
+       interval: 300,
+       ignored: ["**/node_modules/**"],
+     },
+  }
 });
 

@@ -9,6 +9,8 @@ import {
 import http from 'http';
 import pty from 'node-pty';
 import os from 'os';
+import cors from 'cors';
+
 
 
 const WORKING_DIR = '/workspace';
@@ -24,13 +26,19 @@ app.use(express.urlencoded({
     extended: true
 }));
 
+ app.use(cors({
+     methods: ["GET", "POST", "PATCH", "DELETE"],
+     origin: "*"
+ }));
+
+ 
+
 const io = new Server(httpServer, {
     cors: {
         origin: "*",
         methods: ["GET", "POST", "PATCH"],
     }
 });
-
 
 
 
