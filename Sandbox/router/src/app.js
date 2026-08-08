@@ -3,6 +3,7 @@ import morgan from "morgan";
 import {
     createProxyMiddleware
 } from "http-proxy-middleware";
+import http from "http";
 
 const app = express();
 
@@ -90,4 +91,28 @@ app.use((req, res, next) => {
     return next();
 });
 
-export default app;
+
+// Create the HTTP server explicitly
+const server = http.createServer(app);
+
+// ✅ Handle WebSocket upgrades — this is what was missing
+server.on('upgrade', (req, socket, head) => {
+    const host = req.headers.host;
+    const sandboxId = host.split('.')[0];
+    const type = host.split('.')[1];
+
+    console.log(`WS upgrade request: ${host}, sandboxId: ${sandboxId}, type: ${type}`);
+
+    if (type === 'agent') {
+        const proxy = getAgentProxy(sandboxId);
+        proxy.upgrade(req, socket, head);
+    } else if (type === 'preview') {
+        const proxy = getProxy(sandboxId);
+        proxy.upgrade(req, socket, head);
+    } else {
+        socket.destroy();
+    }
+});
+
+
+export default server; // export server, not app
