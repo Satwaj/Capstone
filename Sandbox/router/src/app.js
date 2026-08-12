@@ -3,9 +3,13 @@ import morgan from "morgan";
 import {
     createProxyMiddleware
 } from "http-proxy-middleware";
+import { createProxyServer } from 'httpxy';
 import http from "http";
 
 const app = express();
+
+const wsProxy = createProxyServer({ changeOrigin: true });
+wsProxy.on('error', (err, req, socket) => { socket?.destroy(); });
 
 app.use(morgan("combined"));
 
@@ -34,7 +38,17 @@ function getProxy(sandboxId) {
         proxies[sandboxId] = createProxyMiddleware({
             target,
             changeOrigin: true,
-            ws: true,
+            on: {
+                error: (err, req, res) => {
+                    console.error(`[Proxy Error] Failed to proxy preview request ${req.url} to ${target}:`, err.message);
+                    if (res && !res.headersSent) {
+                        res.status(502).json({
+                            error: "Bad Gateway",
+                            message: `Error occurred while trying to proxy to sandbox ${sandboxId}: ${err.message}`
+                        });
+                    }
+                }
+            }
         });
     }
 
@@ -49,7 +63,17 @@ function getAgentProxy(sandboxId) {
         agentProxies[sandboxId] = createProxyMiddleware({
             target,
             changeOrigin: true,
-            ws: true,
+            on: {
+                error: (err, req, res) => {
+                    console.error(`[Proxy Error] Failed to proxy agent request ${req.url} to ${target}:`, err.message);
+                    if (res && !res.headersSent) {
+                        res.status(502).json({
+                            error: "Bad Gateway",
+                            message: `Error occurred while trying to proxy to sandbox agent ${sandboxId}: ${err.message}`
+                        });
+                    }
+                }
+            }
         });
     }
 
@@ -95,8 +119,9 @@ app.use((req, res, next) => {
 // Create the HTTP server explicitly
 const server = http.createServer(app);
 
-// ✅ Handle WebSocket upgrades — this is what was missing
+// ✅ Handle WebSocket upgrades — using httpxy for v4 compatibility
 server.on('upgrade', (req, socket, head) => {
+    socket.on('error', () => socket.destroy());   // guard against EPIPE during live pipe
     const host = req.headers.host;
     const sandboxId = host.split('.')[0];
     const type = host.split('.')[1];
@@ -104,11 +129,11 @@ server.on('upgrade', (req, socket, head) => {
     console.log(`WS upgrade request: ${host}, sandboxId: ${sandboxId}, type: ${type}`);
 
     if (type === 'agent') {
-        const proxy = getAgentProxy(sandboxId);
-        proxy.upgrade(req, socket, head);
+        wsProxy.ws(req, socket, { target: `http://sandbox-service-${sandboxId}:3000` }, head)
+            .catch(() => socket.destroy());
     } else if (type === 'preview') {
-        const proxy = getProxy(sandboxId);
-        proxy.upgrade(req, socket, head);
+        wsProxy.ws(req, socket, { target: `http://sandbox-service-${sandboxId}` }, head)
+            .catch(() => socket.destroy());
     } else {
         socket.destroy();
     }
@@ -116,4 +141,3 @@ server.on('upgrade', (req, socket, head) => {
 
 
 export default server; // export server, not app
-

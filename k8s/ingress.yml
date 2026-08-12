@@ -5,13 +5,13 @@ metadata:
   annotations:
     # Time in seconds to wait for a response from the pod
     nginx.ingress.kubernetes.io/proxy-read-timeout: "6000"
-    
+
     # Time in seconds to wait for data to be sent to the pod
     nginx.ingress.kubernetes.io/proxy-send-timeout: "6000"
-    
+
     # Time in seconds to establish a connection to the pod
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "6000"
-  
+
     nginx.ingress.kubernetes.io/affinity: "cookie"
     nginx.ingress.kubernetes.io/session-cookie-name: "route"
     nginx.ingress.kubernetes.io/session-cookie-path: "/"
@@ -31,7 +31,7 @@ spec:
         backend:
           service:
             name: sandbox-service
-            port: 
+            port:
               number: 80
 
   - http:
@@ -41,8 +41,21 @@ spec:
         backend:
           service:
             name: ai-service
-            port: 
+            port:
               number: 80
+
+
+  - http:
+      paths:
+      - pathType: Prefix
+        path: "/api/auth"
+        backend:
+          service:
+            name: auth-service
+            port:
+              number: 80
+
+
 
   - host: "*.preview.127.0.0.1.nip.io"
     http:
@@ -52,7 +65,7 @@ spec:
         backend:
           service:
             name: router-service
-            port: 
+            port:
               number: 80
 
   - host: "*.agent.127.0.0.1.nip.io"
@@ -63,7 +76,7 @@ spec:
         backend:
           service:
             name: router-service
-            port: 
+            port:
               number: 80
 
   - host: "*.preview.localhost"
@@ -74,7 +87,7 @@ spec:
         backend:
           service:
             name: router-service
-            port: 
+            port:
               number: 80
 
   - host: "*.agent.localhost"
@@ -85,5 +98,5 @@ spec:
         backend:
           service:
             name: router-service
-            port: 
+            port:
               number: 80

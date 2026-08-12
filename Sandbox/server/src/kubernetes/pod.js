@@ -8,7 +8,8 @@ export async function createPod(sandboxId) {
             name: `sandbox-pod-${sandboxId}`,
             labels: {
                 sandboxId: sandboxId
-            }
+            },
+            
         },
         spec: {
             volumes: [
@@ -75,4 +76,3 @@ export async function createPod(sandboxId) {
 
     return response;
 }
-
