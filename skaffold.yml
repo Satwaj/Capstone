@@ -15,6 +15,14 @@ build:
       infer:
         - "src/**"
 
+  - image:  notification
+    context: notification
+    docker:
+      dockerfile:  dockerfile
+    sync:
+      infer:
+        - "src/**"
+
   - image:  auth
     context: Auth
     docker:
@@ -58,3 +66,5 @@ manifests:
   - k8s/ingress.yml
   - k8s/rbac.yml
   - k8s/secrets.yml
+  - k8s/notification-deployment.yml
+  - k8s/notification-service.yml

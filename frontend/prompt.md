@@ -2,9 +2,15 @@
 --use tailwind css for styling
 --use proffessional theme dont use ai colours like purple voilet pink ...use black colours like a professional theme
 
+--for ui use google stich mcp and create a smmoth ui like a anitgravity cli ui
+
+--user can see files and a file preview also like all code of a file
+
+
 --use proper 4 layer architechture for building frontend like
 
 ex--
+maintened a file structure properly
 
 --services
 --hooks
@@ -188,3 +194,5 @@ use iframe with preeview url  "previewUrl": "http://019ff76e-c062-710f-a09a-bb3c
 
 
 cretae a asthetic ui like a anitgravity ui with polish and professional dont use ai colours like voilet blue purple use black colours
+
+
