@@ -1,0 +1,36 @@
+/* ── xterm.js Theme Overrides ───────────────────────────── */
+.xterm {
+  padding: 8px;
+  height: 100%;
+}
+
+.xterm-viewport {
+  scrollbar-width: thin;
+  scrollbar-color: #333333 transparent;
+}
+
+.xterm-viewport::-webkit-scrollbar {
+  width: 6px;
+}
+
+.xterm-viewport::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.xterm-viewport::-webkit-scrollbar-thumb {
+  background: #333333;
+  border-radius: 3px;
+}
+
+.xterm-viewport::-webkit-scrollbar-thumb:hover {
+  background: #444444;
+}
+
+.xterm-screen {
+  height: 100% !important;
+}
+
+/* Cursor styling */
+.xterm .xterm-cursor-layer .xterm-cursor {
+  background-color: #e0e0e0 !important;
+}

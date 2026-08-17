@@ -41,15 +41,20 @@ agentRouter.post("/invoke", async (req, res) => {
                 res.write(`data: ${chunk}\n\n`);
             }
 
-        res.json({
-            response
-        });
+        res.end();
 
     } catch (error) {
         console.error("Error invoking agent:", error);
-        res.status(500).json({
-            error: "Failed to invoke agent"
-        });
+        // Only send error response if headers haven't been sent yet
+        if (!res.headersSent) {
+            res.status(500).json({
+                error: "Failed to invoke agent"
+            });
+        } else {
+            // If SSE already started, end the stream gracefully
+            res.write(`data: Error: ${error.message}\n\n`);
+            res.end();
+        }
     }
 });
 
