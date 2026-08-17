@@ -5,6 +5,7 @@ import {
 } from "http-proxy-middleware";
 import { createProxyServer } from 'httpxy';
 import http from "http";
+import { refreshTTL } from "./config/redis.js";
 
 const app = express();
 
@@ -81,12 +82,11 @@ function getAgentProxy(sandboxId) {
 }
 
 // Route requests based on subdomain
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
     const host = req.headers.host || "";
 
     // Remove port if present
     const hostname = host.split(":")[0];
-
     const parts = hostname.split(".");
 
     /*
@@ -102,6 +102,12 @@ app.use((req, res, next) => {
 
     if (!sandboxId || !type) {
         return next();
+    }
+
+    try {
+        await refreshTTL(sandboxId);
+    } catch (err) {
+        console.error(`[Redis TTL Error] Failed to refresh TTL for ${sandboxId}:`, err.message);
     }
 
     if (type === "agent") {
