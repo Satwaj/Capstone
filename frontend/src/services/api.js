@@ -15,6 +15,7 @@ const DEFAULT_HEADERS = {
 export async function request(url, options = {}) {
   const config = {
     headers: { ...DEFAULT_HEADERS, ...options.headers },
+    credentials: "include",   // send cookies for protected routes
     ...options,
   };
 

@@ -7,12 +7,32 @@
 import { get, post, patch } from "./api";
 
 /**
- * Start a new sandbox environment.
+ * Create a new project.
+ * POST /api/sandbox/project
+ * @param {string} title
+ * @returns {{ message, project: { _id, title, user, __v } }}
+ */
+export async function createProject(title) {
+  return post("/api/sandbox/project", { title });
+}
+
+/**
+ * Get all projects for the authenticated user.
+ * GET /api/sandbox/project
+ * @returns {{ message, projects }}
+ */
+export async function getProjects() {
+  return get("/api/sandbox/project");
+}
+
+/**
+ * Start a new sandbox environment for an existing project.
  * POST /api/sandbox/start
+ * @param {string} projectId
  * @returns {{ sandboxId, previewUrl, agentUrl, message }}
  */
-export async function startSandbox() {
-  return post("/api/sandbox/start");
+export async function startSandbox(projectId) {
+  return post("/api/sandbox/start", { projectId });
 }
 
 /**

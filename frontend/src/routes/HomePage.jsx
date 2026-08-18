@@ -1,34 +1,81 @@
 /**
  * HomePage — Landing page with "Create Sandbox" button.
+ *
+ * Flow:
+ *  1. User clicks "Create Sandbox" → modal opens asking for a project title.
+ *  2. POST /api/sandbox/project  → get projectId
+ *  3. POST /api/sandbox/start    → get sandboxId / URLs
+ *  4. Navigate to /sandbox/:id
  */
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Terminal, Loader2, ArrowRight, Code2, Monitor, MessageSquare } from "lucide-react";
-import { startSandbox } from "../services/sandboxApi";
+import { Terminal, Loader2, ArrowRight, Code2, Monitor, MessageSquare, X } from "lucide-react";
+import { createProject, startSandbox } from "../services/sandboxApi";
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
-  const handleCreate = async () => {
+  // Modal state
+  const [modalOpen, setModalOpen]   = useState(false);
+  const [title, setTitle]           = useState("");
+
+  // Async state
+  const [loading, setLoading]       = useState(false);
+  const [step, setStep]             = useState("");   // human-readable progress
+  const [error, setError]           = useState(null);
+
+  const inputRef = useRef(null);
+
+  // Focus input when modal opens
+  useEffect(() => {
+    if (modalOpen) {
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+  }, [modalOpen]);
+
+  const openModal = () => {
+    setTitle("");
+    setError(null);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    if (loading) return;   // don't close while in flight
+    setModalOpen(false);
+    setError(null);
+  };
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    const trimmed = title.trim();
+    if (!trimmed) return;
+
     setLoading(true);
     setError(null);
 
     try {
-      const data = await startSandbox();
-      // Navigate to sandbox workspace with state
+      // Step 1 – create project
+      setStep("Creating project…");
+      const { project } = await createProject(trimmed);
+
+      // Step 2 – start sandbox
+      setStep("Spinning up sandbox…");
+      const data = await startSandbox(project._id);
+
       navigate(`/sandbox/${data.sandboxId}`, {
         state: {
-          sandboxId: data.sandboxId,
+          sandboxId:  data.sandboxId,
           previewUrl: data.previewUrl,
-          agentUrl: data.agentUrl,
+          agentUrl:   data.agentUrl,
+          projectId:  project._id,
+          title:      project.title,
         },
       });
     } catch (err) {
       setError(err.message || "Failed to create sandbox");
     } finally {
       setLoading(false);
+      setStep("");
     }
   };
 
@@ -81,40 +128,102 @@ export default function HomePage() {
 
         {/* Create button */}
         <button
-          onClick={handleCreate}
-          disabled={loading}
+          onClick={openModal}
           className="
             group flex items-center gap-3 px-8 py-3.5
             bg-text-primary text-bg-deepest
             rounded-lg font-medium text-sm
             hover:bg-text-secondary active:scale-[0.98]
             transition-all duration-200
-            disabled:opacity-50 disabled:cursor-not-allowed
           "
         >
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Creating sandbox...</span>
-            </>
-          ) : (
-            <>
-              <span>Create Sandbox</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-            </>
-          )}
+          <span>Create Sandbox</span>
+          <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
         </button>
-
-        {/* Error message */}
-        {error && (
-          <div className="px-4 py-2 rounded-lg bg-bg-surface border border-accent-red/30 text-accent-red text-[12px] font-mono max-w-md text-center animate-fade-in">
-            {error}
-          </div>
-        )}
       </div>
 
       {/* Bottom accent line */}
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border-default to-transparent" />
+
+      {/* ── Project Title Modal ── */}
+      {modalOpen && (
+        <div
+          className="absolute inset-0 z-50 flex items-center justify-center bg-bg-deepest/70 backdrop-blur-sm animate-fade-in"
+          onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}
+        >
+          <div className="w-full max-w-sm mx-4 bg-bg-surface border border-border-default rounded-xl shadow-2xl overflow-hidden">
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border-default">
+              <h2 className="text-sm font-semibold text-text-primary">New Sandbox</h2>
+              <button
+                onClick={closeModal}
+                disabled={loading}
+                className="text-text-muted hover:text-text-primary transition-colors disabled:opacity-40"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal body */}
+            <form onSubmit={handleCreate} className="p-5 flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-mono text-text-muted uppercase tracking-widest">
+                  Project title
+                </label>
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="my-awesome-project"
+                  disabled={loading}
+                  className="
+                    w-full px-3 py-2.5 rounded-lg
+                    bg-bg-deepest border border-border-default
+                    text-sm text-text-primary placeholder:text-text-muted
+                    focus:outline-none focus:border-text-tertiary
+                    disabled:opacity-50
+                    transition-colors font-mono
+                  "
+                />
+              </div>
+
+              {/* Error */}
+              {error && (
+                <div className="px-3 py-2 rounded-lg bg-bg-deepest border border-accent-red/30 text-accent-red text-[11px] font-mono animate-fade-in">
+                  {error}
+                </div>
+              )}
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={loading || !title.trim()}
+                className="
+                  flex items-center justify-center gap-2 py-2.5
+                  bg-text-primary text-bg-deepest
+                  rounded-lg font-medium text-sm
+                  hover:bg-text-secondary active:scale-[0.98]
+                  transition-all duration-200
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                "
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span className="font-mono text-[12px]">{step}</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Launch</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
