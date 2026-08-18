@@ -13,7 +13,7 @@ export async function createSandboxKey(sandboxId) {
       status: "active",
     }),
     "EX",
-    600,
+    60 * 20 // Set TTL to 20 minutes
   );
 }
 
